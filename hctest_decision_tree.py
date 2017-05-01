@@ -70,3 +70,55 @@ dot_data = tree.export_graphviz(clf, out_file=None,
                          special_characters=True)
 graph = pydotplus.graph_from_dot_data(dot_data)
 graph.write_pdf("retirement.pdf")
+
+# ---------------------------------------------
+# 結果を可視化してみる
+
+n_nodes = clf.tree_.node_count
+children_left = clf.tree_.children_left
+children_right = clf.tree_.children_right
+feature = clf.tree_.feature
+threshold = clf.tree_.threshold
+
+node_depth = np.zeros(shape=n_nodes)
+is_leaves = np.zeros(shape=n_nodes, dtype=bool)
+stack = [(0, -1)]  # seed is the root node id and its parent depth
+while len(stack) > 0:
+    node_id, parent_depth = stack.pop()
+    node_depth[node_id] = parent_depth + 1
+
+    # If we have a test node
+    if (children_left[node_id] != children_right[node_id]):
+        stack.append((children_left[node_id], parent_depth + 1))
+        stack.append((children_right[node_id], parent_depth + 1))
+    else:
+        is_leaves[node_id] = True
+
+print("The binary tree structure has %s nodes and has "
+      "the following tree structure:"
+      % n_nodes)
+for i in range(n_nodes):
+    if is_leaves[i]:
+        # print("%snode=%s leaf node." % (node_depth[i] * "\t", i))
+        print("-------------if node start--------------------")
+        print(node_depth[i])
+        print("-------------if node end--------------------")
+    else:
+        # print("%snode=%s test node: go to node %s if X[:, %s] <= %ss else to "
+        #       "node %s."
+        #       % (node_depth[i] * "\t",
+        #          i,
+        #          children_left[i],
+        #          feature[i],
+        #          threshold[i],
+        #          children_right[i],
+        #          ))
+        print("-------------else node start--------------------")
+        print(node_depth[i])
+        print(i)
+        print(children_left[i])
+        print(feature[i])
+        print(threshold[i])
+        print(children_right[i])
+        print("-------------else node end--------------------")
+print()
